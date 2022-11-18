@@ -456,7 +456,7 @@ const AP_Param::Info Copter::var_info[] = {
 
     // variables not in the g class which contain EEPROM saved variables
 
-#if CAMERA == ENABLED
+#if AP_CAMERA_ENABLED
     // @Group: CAM_
     // @Path: ../libraries/AP_Camera/AP_Camera.cpp
     GOBJECT(camera,           "CAM_", AP_Camera),
@@ -586,7 +586,7 @@ const AP_Param::Info Copter::var_info[] = {
     GOBJECT(can_mgr,        "CAN_",       AP_CANManager),
 #endif
 
-#if SPRAYER_ENABLED == ENABLED
+#if HAL_SPRAYER_ENABLED
     // @Group: SPRAY_
     // @Path: ../libraries/AC_Sprayer/AC_Sprayer.cpp
     GOBJECT(sprayer,                "SPRAY_",       AC_Sprayer),
@@ -617,7 +617,7 @@ const AP_Param::Info Copter::var_info[] = {
     GOBJECT(avoid,      "AVOID_",   AC_Avoid),
 #endif
 
-#if AC_RALLY == ENABLED
+#if HAL_RALLY_ENABLED
     // @Group: RALLY_
     // @Path: AP_Rally.cpp,../libraries/AP_Rally/AP_Rally.cpp
     GOBJECT(rally,      "RALLY_",   AP_Rally_Copter),
@@ -683,7 +683,7 @@ const AP_Param::Info Copter::var_info[] = {
     GOBJECT(precland, "PLND_", AC_PrecLand),
 #endif
 
-#if RPM_ENABLED == ENABLED
+#if AP_RPM_ENABLED
     // @Group: RPM
     // @Path: ../libraries/AP_RPM/AP_RPM.cpp
     GOBJECT(rpm_sensor, "RPM", AP_RPM),
@@ -825,7 +825,7 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     AP_SUBGROUPINFO(stats, "STAT", 12, ParametersG2, AP_Stats),
 #endif
 
-#if GRIPPER_ENABLED == ENABLED
+#if AP_GRIPPER_ENABLED
     // @Group: GRIP_
     // @Path: ../libraries/AP_Gripper/AP_Gripper.cpp
     AP_SUBGROUPINFO(gripper, "GRIP_", 13, ParametersG2, AP_Gripper),

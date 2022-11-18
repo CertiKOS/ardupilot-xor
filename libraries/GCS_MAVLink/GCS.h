@@ -3,11 +3,7 @@
 // protocols.
 #pragma once
 
-#include <AP_HAL/AP_HAL_Boards.h>
-
-#ifndef HAL_GCS_ENABLED
-#define HAL_GCS_ENABLED 1
-#endif
+#include "GCS_config.h"
 
 #if HAL_GCS_ENABLED
 
@@ -21,19 +17,19 @@
 #include <AP_Common/Bitmask.h>
 #include <AP_LTM_Telem/AP_LTM_Telem.h>
 #include <AP_Devo_Telem/AP_Devo_Telem.h>
-#include <AP_Filesystem/AP_Filesystem_Available.h>
+#include <AP_Filesystem/AP_Filesystem_config.h>
+#include <AP_Frsky_Telem/AP_Frsky_config.h>
 #include <AP_GPS/AP_GPS.h>
 #include <AP_OpticalFlow/AP_OpticalFlow.h>
-#include <AP_OpenDroneID/AP_OpenDroneID.h>
 #include <AP_Mount/AP_Mount.h>
-#include <AC_Fence/AC_Fence.h>
+#include <AP_SerialManager/AP_SerialManager.h>
 
 #include "ap_message.h"
 
 #define GCS_DEBUG_SEND_MESSAGE_TIMINGS 0
 
 #ifndef HAL_HIGH_LATENCY2_ENABLED
-#define HAL_HIGH_LATENCY2_ENABLED !HAL_MINIMIZE_FEATURES
+#define HAL_HIGH_LATENCY2_ENABLED 1
 #endif
 
 #ifndef HAL_MAVLINK_INTERVALS_FROM_FILES_ENABLED
@@ -184,8 +180,6 @@ public:
                                      mission_type);
     }
 
-    static const MAV_MISSION_TYPE supported_mission_types[3];
-
     // packetReceived is called on any successful decode of a mavlink message
     virtual void packetReceived(const mavlink_status_t &status,
                                 const mavlink_message_t &msg);
@@ -295,7 +289,9 @@ public:
     void send_simstate() const;
     void send_sim_state() const;
     void send_ahrs();
+#if AP_MAVLINK_BATTERY2_ENABLED
     void send_battery2();
+#endif
 #if AP_OPTICALFLOW_ENABLED
     void send_opticalflow();
 #endif
@@ -503,7 +499,7 @@ protected:
     void handle_common_message(const mavlink_message_t &msg);
     void handle_set_gps_global_origin(const mavlink_message_t &msg);
     void handle_setup_signing(const mavlink_message_t &msg) const;
-    virtual MAV_RESULT handle_preflight_reboot(const mavlink_command_long_t &packet);
+    virtual MAV_RESULT handle_preflight_reboot(const mavlink_command_long_t &packet, const mavlink_message_t &msg);
 
     // reset a message interval via mavlink:
     MAV_RESULT handle_command_set_message_interval(const mavlink_command_long_t &packet);
@@ -755,7 +751,6 @@ private:
     // if true is returned, interval will contain the default interval for id
     bool get_default_interval_for_ap_message(const ap_message id, uint16_t &interval) const;
     //  if true is returned, interval will contain the default interval for id
-    bool get_default_interval_for_mavlink_message_id(const uint32_t mavlink_message_id, uint16_t &interval) const;
     // returns an interval in milliseconds for any ap_message in stream id
     uint16_t get_interval_for_stream(GCS_MAVLINK::streams id) const;
     // set an inverval for a specific mavlink message.  Returns false
@@ -1078,11 +1073,12 @@ public:
                               ap_var_type param_type,
                               float param_value);
 
-    static class MissionItemProtocol_Waypoints *_missionitemprotocol_waypoints;
-    static class MissionItemProtocol_Rally *_missionitemprotocol_rally;
-#if AP_FENCE_ENABLED
-    static class MissionItemProtocol_Fence *_missionitemprotocol_fence;
-#endif
+    // an array of objects used to handle each of the different
+    // protocol types we support.  This is indexed by the enumeration
+    // MAV_MISSION_TYPE, taking advantage of the fact that fence,
+    // mission and rally have values 0, 1 and 2.  Indexing should be via
+    // get_prot_for_mission_type to do bounds checking.
+    static class MissionItemProtocol *missionitemprotocols[3];
     class MissionItemProtocol *get_prot_for_mission_type(const MAV_MISSION_TYPE mission_type) const;
     void try_send_queued_message_for_type(MAV_MISSION_TYPE type) const;
 
@@ -1103,8 +1099,10 @@ public:
 
     bool out_of_time() const;
 
+#if AP_FRSKY_TELEM_ENABLED
     // frsky backend
     class AP_Frsky_Telem *frsky;
+#endif
 
 #if AP_LTM_TELEM_ENABLED
     // LTM backend

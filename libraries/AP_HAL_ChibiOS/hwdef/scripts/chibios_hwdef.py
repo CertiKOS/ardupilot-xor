@@ -1488,6 +1488,11 @@ def write_IMU_config(f):
             error("Duplicate IMU: %s" % seen_str(dev))
         seen.add(seen_str(dev))
         driver = dev[0]
+        # get instance number if mentioned
+        instance = -1
+        if dev[-1].startswith("INSTANCE:"):
+            instance = int(dev[-1][9:])
+            dev = dev[:-1]
         for i in range(1, len(dev)):
             if dev[i].startswith("SPI:"):
                 dev[i] = parse_spi_device(dev[i])
@@ -1495,7 +1500,11 @@ def write_IMU_config(f):
                 (wrapper, dev[i]) = parse_i2c_device(dev[i])
         n = len(devlist)+1
         devlist.append('HAL_INS_PROBE%u' % n)
-        if dev[-1].startswith("BOARD_MATCH("):
+        if instance != -1:
+            f.write(
+            '#define HAL_INS_PROBE%u %s ADD_BACKEND_INSTANCE(AP_InertialSensor_%s::probe(*this,%s),%d)\n'
+            % (n, wrapper, driver, ','.join(dev[1:]), instance))
+        elif dev[-1].startswith("BOARD_MATCH("):
             f.write(
                 '#define HAL_INS_PROBE%u %s ADD_BACKEND_BOARD_MATCH(%s, AP_InertialSensor_%s::probe(*this,%s))\n'
                 % (n, wrapper, dev[-1], driver, ','.join(dev[1:-1])))
@@ -2345,6 +2354,9 @@ def write_hwdef_header(outfilename):
     write_AIRSPEED_config(f)
     write_board_validate_macro(f)
     add_apperiph_defaults(f)
+    add_bootloader_defaults(f)
+    add_iomcu_firmware_defaults(f)
+    add_normal_firmware_defaults(f)
     write_check_firmware(f)
 
     write_peripheral_enable(f)
@@ -2784,6 +2796,8 @@ def add_apperiph_defaults(f):
 
     print("Setting up as AP_Periph")
     f.write('''
+// AP_Periph defaults
+
 #ifndef HAL_SCHEDULER_ENABLED
 #define HAL_SCHEDULER_ENABLED 0
 #endif
@@ -2911,8 +2925,88 @@ def add_apperiph_defaults(f):
 #define AP_RANGEFINDER_HC_SR04_ENABLED 0
 #define AP_RANGEFINDER_PWM_ENABLED 0
 
+// no CAN manager in AP_Periph:
+#define HAL_CANMANAGER_ENABLED 0
+
+// Periphs don't use the FFT library:
+#ifndef HAL_GYROFFT_ENABLED
+#define HAL_GYROFFT_ENABLED 0
+#endif
+
+// MSP parsing is off by default in AP_Periph:
+#ifndef HAL_MSP_ENABLED
+#define HAL_MSP_ENABLED 0
+#endif
+
+// periph does not make use of compass scaling or diagonals
+#ifndef AP_COMPASS_DIAGONALS_ENABLED
+#define AP_COMPASS_DIAGONALS_ENABLED 0
+#endif
 ''')
 
+def add_bootloader_defaults(f):
+    '''add default defines for peripherals'''
+    if not args.bootloader:
+        return
+
+    print("Setting up as Bootloader")
+    f.write('''
+// AP_Bootloader defaults
+
+#define HAL_DSHOT_ALARM_ENABLED 0
+
+// bootloaders *definitely* don't use the FFT library:
+#ifndef HAL_GYROFFT_ENABLED
+#define HAL_GYROFFT_ENABLED 0
+#endif
+
+// bootloaders don't talk to the GCS:
+#ifndef HAL_GCS_ENABLED
+#define HAL_GCS_ENABLED 0
+#endif
+
+#define HAL_MAX_CAN_PROTOCOL_DRIVERS 0
+''')
+
+def add_iomcu_firmware_defaults(f):
+    '''add default defines IO firmwares'''
+    if env_vars.get('IOMCU_FW', 0) == 0:
+        # not IOMCU firmware
+        return
+
+    print("Setting up as IO firmware")
+    f.write('''
+// IOMCU Firmware defaults
+
+#define HAL_DSHOT_ALARM_ENABLED 0
+
+// IOMCUs *definitely* don't use the FFT library:
+#ifndef HAL_GYROFFT_ENABLED
+#define HAL_GYROFFT_ENABLED 0
+#endif
+''')
+
+def add_normal_firmware_defaults(f):
+    '''add default defines to builds with are not bootloader, periph or IOMCU'''
+    if env_vars.get('IOMCU_FW', 0) != 0:
+        # IOMCU firmware
+        return
+    if env_vars.get('AP_PERIPH', 0) != 0:
+        # Periph firmware
+        return
+    if args.bootloader:
+        # guess
+        return
+
+    print("Setting up as normal firmware")
+    f.write('''
+// firmware defaults
+
+#ifndef HAL_DSHOT_ALARM_ENABLED
+#define HAL_DSHOT_ALARM_ENABLED (HAL_PWM_COUNT>0)
+#endif
+
+''')
 
 # process input file
 for fname in args.hwdef:
@@ -2941,6 +3035,7 @@ write_hwdef_header(os.path.join(outdir, "hwdef.h"))
 write_ldscript(os.path.join(outdir, "ldscript.ld"))
 
 romfs_add_dir(['scripts'])
+romfs_add_dir(['param'])
 
 write_ROMFS(outdir)
 

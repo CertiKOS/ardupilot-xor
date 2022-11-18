@@ -19,6 +19,7 @@
 #include <AC_WPNav/AC_Loiter.h>
 #include <AC_Avoidance/AC_Avoid.h>
 #include <AP_Logger/LogStructure.h>
+#include <AP_Mission/AP_Mission.h>
 #include <AP_Proximity/AP_Proximity.h>
 #include "qautotune.h"
 #include "defines.h"
@@ -173,7 +174,9 @@ public:
 
 private:
     AP_AHRS &ahrs;
-    AP_Vehicle::MultiCopter aparm;
+
+    // key aircraft parameters passed to multiple libraries
+    AP_MultiCopter aparm;
 
     AP_InertialNav inertial_nav{ahrs};
 
@@ -664,6 +667,11 @@ private:
       get a scaled Q_WP_SPEED based on direction of movement
      */
     float get_scaled_wp_speed(float target_bearing_deg) const;
+
+    /*
+      setup scaling of roll and pitch angle P gains to match fixed wing gains
+     */
+    void setup_rp_fw_angle_gains(void);
 
 public:
     void motor_test_output();

@@ -129,8 +129,10 @@ private:
     AP_Int8 *modes;
     const uint8_t num_modes = 6;
 
+#if AP_RPM_ENABLED
     // AP_RPM Module
     AP_RPM rpm_sensor;
+#endif
 
     // Arming/Disarming management class
     AP_Arming_Rover arming;
@@ -156,7 +158,7 @@ private:
     struct Location current_loc;
 
     // Camera
-#if CAMERA == ENABLED
+#if AP_CAMERA_ENABLED
     AP_Camera camera{MASK_LOG_CAMERA};
 #endif
 
@@ -258,7 +260,7 @@ private:
     bool set_desired_speed(float speed) override;
     bool get_control_output(AP_Vehicle::ControlOutput control_output, float &control_value) override;
     bool nav_scripting_enable(uint8_t mode) override;
-    bool nav_script_time(uint16_t &id, uint8_t &cmd, float &arg1, float &arg2) override;
+    bool nav_script_time(uint16_t &id, uint8_t &cmd, float &arg1, float &arg2, int16_t &arg3, int16_t &arg4) override;
     void nav_script_time_done(uint16_t id) override;
 #endif // AP_SCRIPTING_ENABLED
     void stats_update();

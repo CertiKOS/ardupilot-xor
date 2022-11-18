@@ -172,7 +172,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #if MODE_SMARTRTL_ENABLED == ENABLED
     SCHED_TASK_CLASS(ModeSmartRTL,         &copter.mode_smartrtl,       save_position,    3, 100,  51),
 #endif
-#if SPRAYER_ENABLED == ENABLED
+#if HAL_SPRAYER_ENABLED
     SCHED_TASK_CLASS(AC_Sprayer,           &copter.sprayer,               update,         3,  90,  54),
 #endif
     SCHED_TASK(three_hz_loop,          3,     75, 57),
@@ -203,7 +203,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #if HAL_MOUNT_ENABLED
     SCHED_TASK_CLASS(AP_Mount,             &copter.camera_mount,        update,          50,  75, 108),
 #endif
-#if CAMERA == ENABLED
+#if AP_CAMERA_ENABLED
     SCHED_TASK_CLASS(AP_Camera,            &copter.camera,              update,          50,  75, 111),
 #endif
 #if LOGGING_ENABLED == ENABLED
@@ -214,7 +214,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK_CLASS(AP_InertialSensor,    &copter.ins,                 periodic,       400,  50, 123),
 
     SCHED_TASK_CLASS(AP_Scheduler,         &copter.scheduler,           update_logging, 0.1,  75, 126),
-#if RPM_ENABLED == ENABLED
+#if AP_RPM_ENABLED
     SCHED_TASK_CLASS(AP_RPM,               &copter.rpm_sensor,          update,          40, 200, 129),
 #endif
     SCHED_TASK_CLASS(AP_TempCalibration,   &copter.g2.temp_calibration, update,          10, 100, 135),
@@ -227,7 +227,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #if AP_TERRAIN_AVAILABLE
     SCHED_TASK(terrain_update,        10,    100, 144),
 #endif
-#if GRIPPER_ENABLED == ENABLED
+#if AP_GRIPPER_ENABLED
     SCHED_TASK_CLASS(AP_Gripper,           &copter.g2.gripper,          update,          10,  75, 147),
 #endif
 #if WINCH_ENABLED == ENABLED
@@ -411,13 +411,13 @@ bool Copter::nav_scripting_enable(uint8_t mode)
 }
 
 // lua scripts use this to retrieve the contents of the active command
-bool Copter::nav_script_time(uint16_t &id, uint8_t &cmd, float &arg1, float &arg2)
+bool Copter::nav_script_time(uint16_t &id, uint8_t &cmd, float &arg1, float &arg2, int16_t &arg3, int16_t &arg4)
 {
     if (flightmode != &mode_auto) {
         return false;
     }
 
-    return mode_auto.nav_script_time(id, cmd, arg1, arg2);
+    return mode_auto.nav_script_time(id, cmd, arg1, arg2, arg3, arg4);
 }
 
 // lua scripts use this to indicate when they have complete the command

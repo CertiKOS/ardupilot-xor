@@ -138,7 +138,10 @@ public:
     // If false returned, do not use for flight control
     bool getPosNE(Vector2f &posNE) const;
 
-    // Write the last calculated D position relative to the reference point (m).
+    // get position D from local origin
+    bool getPosD_local(float &posD) const;
+
+    // Write the last calculated D position relative to the public origin
     // If a calculated solution is not available, use the best available data and return false
     // If false returned, do not use for flight control
     bool getPosD(float &posD) const;
@@ -149,6 +152,10 @@ public:
     // return estimate of true airspeed vector in body frame in m/s
     // returns false if estimate is unavailable
     bool getAirSpdVec(Vector3f &vel) const;
+
+    // return the innovation in m/s, innovation variance in (m/s)^2 and age in msec of the last TAS measurement processed
+    // returns false if the data is unavailable
+    bool getAirSpdHealthData(float &innovation, float &innovationVariance, uint32_t &age_ms) const;
 
     // Return the rate of change of vertical position in the down direction (dPosD/dt) in m/s
     // This can be different to the z component of the EKF velocity state because it will fluctuate with height errors and corrections in the EKF
@@ -555,6 +562,7 @@ private:
     struct tas_elements : EKF_obs_element_t {
         ftype       tas;            // true airspeed measurement (m/sec)
         ftype       tasVariance;    // variance of true airspeed measurement (m/sec)^2
+        bool        allowFusion;    // true if measurement can be allowed to modify EKF states.
     };
 
     struct of_elements : EKF_obs_element_t {
@@ -666,8 +674,10 @@ private:
     // fuse body frame velocity measurements
     void FuseBodyVel();
 
+#if EK3_FEATURE_BEACON_FUSION
     // fuse range beacon measurements
     void FuseRngBcn();
+#endif
 
     // use range beacon measurements to calculate a static position
     void FuseRngBcnStatic();
@@ -737,14 +747,18 @@ private:
     // check for new airspeed data and update stored measurements if available
     void readAirSpdData();
 
+#if EK3_FEATURE_BEACON_FUSION
     // check for new range beacon data and update stored measurements if available
     void readRngBcnData();
+#endif
 
     // determine when to perform fusion of GPS position and  velocity measurements
     void SelectVelPosFusion();
 
+#if EK3_FEATURE_BEACON_FUSION
     // determine when to perform fusion of range measurements take relative to a beacon at a known NED position
     void SelectRngBcnFusion();
+#endif
 
     // determine when to perform fusion of magnetometer measurements
     void SelectMagFusion();
@@ -1265,6 +1279,7 @@ private:
     yaw_elements yawAngDataStatic;      // yaw angle (regardless of yaw source) when the vehicle was last on ground and not moving
 
     // Range Beacon Sensor Fusion
+#if EK3_FEATURE_BEACON_FUSION
     EKF_obs_buffer_t<rng_bcn_elements> storedRangeBeacon; // Beacon range buffer
     rng_bcn_elements rngBcnDataDelayed; // Range beacon data at the fusion time horizon
     uint32_t lastRngBcnPassTime_ms;     // time stamp when the range beacon measurement last passed innovation consistency checks (msec)
@@ -1312,6 +1327,7 @@ private:
         ftype testRatio;    // innovation consistency test ratio
         Vector3F beaconPosNED; // beacon NED position
     } *rngBcnFusionReport;
+#endif  // if EK3_FEATURE_BEACON_FUSION
 
 #if EK3_FEATURE_DRAG_FUSION
     // drag fusion for multicopter wind estimation

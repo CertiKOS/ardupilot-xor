@@ -370,7 +370,7 @@ public:
     AC_Sprayer sprayer;
 #endif
 
-#if GRIPPER_ENABLED
+#if AP_GRIPPER_ENABLED
     AP_Gripper gripper;
 #endif
 
@@ -425,8 +425,11 @@ public:
     // guided options bitmask
     AP_Int32 guided_options;
 
-    // Rover options
+    // manual mode options
     AP_Int32 manual_options;
+
+    // manual mode steering expo
+    AP_Float manual_steering_expo;
 };
 
 extern const AP_Param::Info var_info[];

@@ -170,33 +170,15 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-//  Crop Sprayer - enabled only on larger firmwares
-#ifndef SPRAYER_ENABLED
- # define SPRAYER_ENABLED  HAL_SPRAYER_ENABLED
-#endif
-
-//////////////////////////////////////////////////////////////////////////////
 // Precision Landing with companion computer or IRLock sensor
 #ifndef PRECISION_LANDING
  # define PRECISION_LANDING ENABLED
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-// gripper - enabled only on larger firmwares
-#ifndef GRIPPER_ENABLED
- # define GRIPPER_ENABLED !HAL_MINIMIZE_FEATURES
-#endif
-
-//////////////////////////////////////////////////////////////////////////////
 // winch support
 #ifndef WINCH_ENABLED
 # define WINCH_ENABLED !HAL_MINIMIZE_FEATURES
-#endif
-
-//////////////////////////////////////////////////////////////////////////////
-// rotations per minute sensor support
-#ifndef RPM_ENABLED
- # define RPM_ENABLED !HAL_MINIMIZE_FEATURES
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -437,13 +419,6 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-// CAMERA TRIGGER AND CONTROL
-//
-#ifndef CAMERA
- # define CAMERA        ENABLED
-#endif
-
-//////////////////////////////////////////////////////////////////////////////
 // Flight mode definitions
 //
 
@@ -627,14 +602,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // Fence, Rally and Terrain and AC_Avoidance defaults
 //
-
-#ifndef AC_RALLY
- #define AC_RALLY   ENABLED
-#endif
-
-#if AP_TERRAIN_AVAILABLE && !AC_RALLY
- #error Terrain relies on Rally which is disabled
-#endif
 
 #ifndef AC_AVOID_ENABLED
  #define AC_AVOID_ENABLED   ENABLED

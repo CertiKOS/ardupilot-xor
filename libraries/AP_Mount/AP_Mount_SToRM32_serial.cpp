@@ -6,8 +6,6 @@
 #include <GCS_MAVLink/include/mavlink/v2.0/checksum.h>
 #include <AP_SerialManager/AP_SerialManager.h>
 
-extern const AP_HAL::HAL& hal;
-
 AP_Mount_SToRM32_serial::AP_Mount_SToRM32_serial(AP_Mount &frontend, AP_Mount_Params &params, uint8_t instance) :
     AP_Mount_Backend(frontend, params, instance),
     _reply_type(ReplyType_UNKNOWN)
@@ -131,18 +129,6 @@ void AP_Mount_SToRM32_serial::update()
             _reply_length = get_reply_size(_reply_type);
         }
     }
-}
-
-// set_mode - sets mount's mode
-void AP_Mount_SToRM32_serial::set_mode(enum MAV_MOUNT_MODE mode)
-{
-    // exit immediately if not initialised
-    if (!_initialised) {
-        return;
-    }
-
-    // record the mode change
-    _mode = mode;
 }
 
 // get attitude as a quaternion.  returns true on success
