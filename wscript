@@ -792,7 +792,6 @@ def copy_mavlink(bld):
         copyfile(inp_file.abspath(), out_file.abspath())
 
 def build(bld):
-    bld.add_post_fun(copy_mavlink)
     config_hash = Utils.h_file(bld.bldnode.make_node('ap_config.h').abspath())
     bld.env.CCDEPS = config_hash
     bld.env.CXXDEPS = config_hash
@@ -820,6 +819,8 @@ def build(bld):
 
     bld.add_group('dynamic_sources')
     _build_dynamic_sources(bld)
+
+    copy_mavlink(bld)
 
     bld.add_group('build')
     bld.get_board().build(bld)

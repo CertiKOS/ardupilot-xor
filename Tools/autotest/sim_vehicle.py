@@ -1113,7 +1113,7 @@ group_sim.add_option("-l", "--custom-location",
                      help="set custom start location (lat,lon,alt,heading)")
 group_sim.add_option("-S", "--speedup",
                      default=1,
-                     type='int',
+                     type='float',
                      help="set simulation speedup (1 for wall clock time)")
 group_sim.add_option("-t", "--tracker-location",
                      default='CMAC_PILOTSBOX',
